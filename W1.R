@@ -96,3 +96,79 @@ str(cameraData)
 # read excel: read.xlsx
 # need library library(xlsx)
 
+install.packages("read.xls")
+
+
+###############################################################################
+
+# read XML files
+
+# XML: two components 
+
+# 1. Markup: labels that give the text estructure
+# 2. Content: The actual text of the document
+
+# tag: correspond to general lables
+# elements: specific examples of tags
+<greeting> hellow, world </greeting>
+# attributes:  components of the label
+
+install.packages("XML")
+library(XML)
+
+install.packages("bitops") # in the forum 
+install.packages("RCurl")
+library(RCurl)
+fileUrl <- "https://www.w3schools.com/xml/simple.xml"
+xData <- getURL(fileUrl)
+doc <- xmlParse(xData)
+rootNode <- xmlRoot(doc)
+xmlName(rootNode)
+
+
+fileUrl <- "http://www.w3schools.com/xml/simple.xml" # in the class (dont work)
+doc <- xmlTreeParse(fileUrl, useInternalNodes = TRUE) # load the document and parse it 
+rootNode <- xmlRoot(doc)
+xmlName(rootNODE)
+
+
+names(rootNode)
+rootNode[[1]] # show the first part of the xml file (like a list)
+xmlValue(rootNode[[1]]) # extract the text (that is beetwen the tags)
+
+rootNode[[1]][[1]]
+
+xmlSApply(rootNode,xmlValue)
+
+
+# Xpath -- language to acces the data of the xml
+
+# /node: top level node
+# //node: Node at any level 
+# node[@attr-name] : node with an attribute name
+# node[@attr-name== bob]
+
+xpathSApply(rootNode,"//name", xmlValue) #target in one name of tag
+
+xpathSApply(rootNode,"//price", xmlValue) #target in one name of tag
+
+xpathSApply(rootNode,"/breakfast_menu", xmlValue) #top level node
+
+# Example
+
+fileUrl <- "http://espn.go.com/nfl/team/_/name/bal/baltimore-ravens"
+
+doc <- htmlTreeParse(fileUrl, useInternalNodes = TRUE)
+
+
+
+fileUrl <- "https://www.espn.com/nfl/team/_/name/bal/baltimore-ravens.xml"
+
+download.file(fileUrl, destfile = "raven.xml", method = "curl")
+
+doc <- xmlTreeParse("raven.xml",useInternal=TRUE)
+
+scores <- xpathSApply(doc, "//li[@class= 'score'] ", xmlValue)
+scores
+teams <- xpathSApply(doc, "//li[@class= 'team-name'] ", xmlValue)
+teams
