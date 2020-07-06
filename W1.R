@@ -161,14 +161,62 @@ fileUrl <- "http://espn.go.com/nfl/team/_/name/bal/baltimore-ravens"
 doc <- htmlTreeParse(fileUrl, useInternalNodes = TRUE)
 
 
-
 fileUrl <- "https://www.espn.com/nfl/team/_/name/bal/baltimore-ravens.xml"
-
 download.file(fileUrl, destfile = "raven.xml", method = "curl")
-
 doc <- xmlTreeParse("raven.xml",useInternal=TRUE)
 
-scores <- xpathSApply(doc, "//li[@class= 'score'] ", xmlValue)
+
+library(RCurl) 
+fileUrl <- "https://www.espn.com/nfl/team/_/name/bal/baltimore-ravens" 
+xData <- getURL(fileUrl) 
+doc <- htmlTreeParse(xData,useInternalNodes = TRUE)
+
+scores <- xpathSApply(doc, "//div[@class='score']", xmlValue) 
+scores 
+
+
+scores <- xpathSApply(doc, "//div[@class= 'score'] ", xmlValue)
 scores
-teams <- xpathSApply(doc, "//li[@class= 'team-name'] ", xmlValue)
+teams <- xpathSApply(doc, "//div[@class= 'game-info'] ", xmlValue)
 teams
+
+
+
+# Other option
+install.packages("xml2")
+library(xml2)
+suppressWarnings(dx<-read_xml("https://www.espn.com/nfl/team/_/name/bal/baltimore-ravens", as_html=TRUE))
+teams<-as.character(xml_contents(xml_find_all(dx,"//div[@class='game-info']")))
+scores<-as.character(xml_contents(xml_find_all(dx,"//div[@class='score']")))
+teams
+scores
+
+################################################################################
+################################################################################
+
+# Reading JSON
+
+# JSON = JavaScript Object Notation
+# lightweight data storage, common format for data from application programming
+# interfaces (API)
+# similar to XML in structure but different in syntax/format
+# data can be stored as: numbers, strings, boolean, array, object
+
+install.packages("jsonlite")
+library(jsonlite)
+jsonData <- fromJSON("https://api.github.com/users/jtleek/repos") # strips data
+names(jsonData) # i get a structured data frame
+
+names(jsonData$owner) 
+
+jsonData$owner$login
+
+# converts data frame into JSON format
+
+data <- toJSON(iris, pretty = TRUE) #  pretty = TRUE ;formats the code nicely
+cat(data)
+
+iris2 <- fromJSON(data) # ..converts from JSON object/code back to data frame
+head(iris2)             # not only URL!
+
+
