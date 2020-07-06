@@ -90,3 +90,27 @@ names(food_df) <- c("name", "price", "description", "calories")
 
 els <- getNodeSet(rootNode, "//food")
 df <- xmlToDataFrame(els)
+
+################################################################################
+################################################################################
+library(XML)
+
+
+doc <- htmlTreeParse("deezer1.xml",useInternal=TRUE) # read data
+class(doc) 
+
+
+topNode <- xmlRoot(doc)
+class(topNode)
+xmlName(topNode)
+
+getNodeSet(rootNode)
+
+artist <- xpathSApply(doc, "//a[@data-target= 'artist'] ", xmlValue)
+artist
+itemprop
+
+track <- xpathSApply(doc, "//span[@itemprop= 'name'] ", xmlValue)
+track
+
+df <- data.frame(artist =artist, track =track)
