@@ -7,12 +7,12 @@ fileUrl <- "https://www.w3schools.com/xml/simple.xml"
 download.file(fileUrl, destfile = "simple.xml", method = "curl")
 
 # or (problems)
-
-library(curl)
+library(RCurl)
+library(XML)
 
 fileUrl <- "https://www.w3schools.com/xml/simple.xml"
 xData <- getURL(fileUrl) 
-doc <- htmlTreeParse(xData,useInternalNodes = TRUE)
+doc <- xmlTreeParse(xData,useInternalNodes = TRUE)
 
 
 
