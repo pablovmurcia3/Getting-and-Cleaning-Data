@@ -219,4 +219,119 @@ cat(data)
 iris2 <- fromJSON(data) # ..converts from JSON object/code back to data frame
 head(iris2)             # not only URL!
 
+################################################################################
+################################################################################
 
+# data.table
+
+# inherits from data.frame (external package) → all functions that accept 
+# data.frame work on data.table 
+
+# can be much faster (written in C), much much faster at subsetting/grouping/
+# updating
+
+install.packages("data.table")
+library(data.table)
+
+dt <- data.table(x = rnorm(9), y = rep(c("a", "b", "c"), each = 3), z = rnorm(9)) 
+dt                 
+
+tables() # returns all data tables in memory
+
+# row subsetting 
+
+dt[2, ]
+dt[dt$y=="a",] 
+dt[c(2, 3)] # we can only use one index (different from data frame) 
+
+# Expressions: statements enclosed in {}
+
+{
+    x = 1
+    y =2
+}
+
+
+k = {print(10);5}
+k
+
+#  argument after comma is called an expression (collection of statements 
+# enclosed in {})
+
+# Index in column is for summarazing data
+set.seed(123)
+dt <- data.table(x = rnorm(9), y = rep(c("a", "b", "c"), each = 3), z = rnorm(9)) 
+dt
+dt[,c(2,3)] # oooo i can subset
+
+dt[,list(mean(x), sum(z))] # returns mean of x column and sum of z column 
+# (no "" needed to specify column names, x and z in example) 
+dt[, table(y)] #  get table of y value (perform any functions) 
+
+#add new columns
+
+dt[,w:=z^2] # in a data frame this process spent more memory 
+dt
+
+df <- data.frame(x = rnorm(9), y = rep(c("a", "b", "c"), each = 3), z = rnorm(9)) 
+df[,4] <- df[,3]^2
+names(df) <-c("x","y","z","w")
+df
+
+# detail 
+dt2 <- dt
+dt2
+dt[, y:= 2] 
+dt
+dt2 # when changes are made to dt, changes get translated to dt2 
+
+# muti-steps operations
+
+dt[, m:= {temp <- (x+z); log2(temp +5)}]  # adds a column that equals log2(x+z +5) 
+dt
+
+# plyr like operations 
+
+
+dt[,a:=x>0]
+dt
+dt[,b:=mean(x+w), by=a] 
+dt
+?sample
+
+# special variables 
+# .N = returns integer, length 1, containing the number (essentially count) 
+set.seed(123)
+dt <- data.table (x=sample(letters[1:3], 1E5, TRUE)) # generates data table 
+
+dt[, .N, by=x] # creates a table to count observations by the value of x 
+
+# keys (quickly ﬁlter/subset) 
+dt <- data.table(x = rep(c("a", "b", "c"), each = 100), y = rnorm(300)) 
+
+setkey(dt, x) # set the key to the x column 
+
+dt["a"] # returns a data frame, where x = ‘a’ (eﬀectively ﬁlter) 
+
+# joins (merging tables) 
+DT1 <- data.table(x = c("a", "a","b", "dt1"), y = 1:4)
+DT1
+DT2 <- data.table(x= c("a","b","dt2"), z = 5:7) 
+DT2
+setkey(DT1, x); setkey(DT2, x) # sets the keys for both data tables to be column x
+merge(DT1,DT2)#  returns a table, combine the two tables using column x, 
+# ﬁltering to only the values that match up between common elements the two x 
+# columns (i.e. ‘a’) and the data is merged together 
+
+
+# fast reading of ﬁles
+big_df <- data.frame(x=rnorm(1E6), y= rnorm(1E6))
+file <- tempfile() 
+write.table(big_df, file=file, row.names=FALSE, col.names = TRUE, sep = "\t",
+            quote = FALSE) 
+fread(file) # read ﬁle and load data.table much faster than read.table()
+system.time(fread(file)) 
+
+system.time(read.table(fread(file), header = "TRUE", sep ="/t")) 
+
+            
