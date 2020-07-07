@@ -126,7 +126,7 @@ rootNode <- xmlRoot(doc)
 xmlName(rootNode)
 
 
-fileUrl <- "http://www.w3schools.com/xml/simple.xml" # in the class (dont work)
+fileUrl <- "http://www.w3schools.com/xml/simple.xml" # in the class (not work)
 doc <- xmlTreeParse(fileUrl, useInternalNodes = TRUE) # load the document and parse it 
 rootNode <- xmlRoot(doc)
 xmlName(rootNODE)
@@ -267,7 +267,7 @@ dt[,c(2,3)] # oooo i can subset
 dt[,list(mean(x), sum(z))] # returns mean of x column and sum of z column 
 # (no "" needed to specify column names, x and z in example) 
 dt[, table(y)] #  get table of y value (perform any functions) 
-
+class(dt)
 #add new columns
 
 dt[,w:=z^2] # in a data frame this process spent more memory 
