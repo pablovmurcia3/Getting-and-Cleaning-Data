@@ -121,3 +121,104 @@ h5read("example.h5", "foo/A")
 
 h5read("example.h5", "foo/A", index=list(3:5,2) ) # read only small chunks
 
+################################################################################
+################################################################################
+
+# Reading data from the web 
+
+# Webscraping: Programatically extracting data from the html code of websites
+
+# in some cases is against the terms of service of the websites (ip address blocked)
+
+# Example
+
+con = url("http://scholar.google.com/citations?user=HI-I6C0AAAAJ&hl=en")
+htmlCode = readLines(con)
+class(htmlCode)
+close(con) # close the connection 
+htmlCode[10]
+
+
+
+library(XML)
+library(httr)
+
+url <- "http://scholar.google.com/citations?user=HI-I6C0AAAAJ&hl=en"
+html <- htmlTreeParse(rawToChar(GET(url)$content), useInternalNodes = TRUE)
+xpathSApply(html, "//title", xmlValue)
+
+
+# Other option #################################################################
+url1 <- "https://scholar.google.com/citations?user=HI-I6C0AAAAJ&hl=en"
+download.file(url1, destfile = "jeff.html", method = "curl")
+html <- htmlTreeParse("jeff.html",useInternal=TRUE)
+xpathSApply(html, "//title", xmlValue)
+xpathSApply(html, "//td[@class='gsc_a_c']", xmlValue)
+
+################################################################################
+
+xpathSApply(html, "//td[@class='gsc_a_c']", xmlValue)
+
+
+# GET - httr package
+
+library(httr)
+
+html2=GET("http://scholar.google.com/citations?user=HI-I6C0AAAAJ&hl=en")
+
+content2=content(html2,as="text")
+
+parsedHtml=htmlParse(content2,asText=TRUE)
+
+xpathSApply(parsedHtml, "//title",xmlValue)
+
+# Accessing websites with passwords
+
+pg1 = GET("http://httpbin.org/basic-auth/user/passwd")
+
+pg1
+
+pg2 = GET("http://httpbin.org/basic-auth/user/passwd",
+          authenticate("user","passwd"))
+pg2
+
+names(pg2)
+
+# Using handles 
+google = handle("http://google.com") #save the authentication
+pg1 = GET(handle=google,path="/")
+names(pg1)
+pg2 = GET(handle=google,path="search")
+names(pg2)
+
+################################################################################
+################################################################################
+
+# Reading data from API
+
+# API: Application Programming Interfaces
+
+library(httr)
+
+myapp = oauth_app("twitter",
+                  key="k5kGZ7nhuquMmhTGrv0r32Yv4",secret="Of8AjvBRa5QDy4C0LMAINVR5340qbBemulfmDfdXzUlmHZmRDC")
+
+
+sig = sign_oauth1.0(myapp,
+                    token = "3411628671-HSFKPbNHDfjsLskDNOQ9l9h3gBkW0hHviZPSkV1",
+                    token_secret = "tlwMWtRnDAtbxpeU6qMfqAMV4LNnt2Hh5W61DuUxXybqZ")
+
+homeTL = GET("https://api.twitter.com/1.1/statuses/user_timeline.json?count=70", sig)
+
+# Converting the json object
+
+library(RJSONIO)
+
+json1 = content(homeTL)
+json1[1]
+json2 = jsonlite::fromJSON(toJSON(json1)) #structure a data-frame
+dim(json2)
+dt<-data.frame(json2[,1:9])
+
+
+
