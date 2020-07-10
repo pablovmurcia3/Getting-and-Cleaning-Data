@@ -218,7 +218,7 @@ json1 = content(homeTL)
 json1[1]
 json2 = jsonlite::fromJSON(toJSON(json1)) #structure a data-frame
 dim(json2)
-dt<-data.frame(json2[,1:9])
+dt<-data.frame(json2[,1:9]) #data.frame
 
 
 
