@@ -14,18 +14,22 @@ gtoken <- config(token =github_token)
 req <- GET("https://api.github.com/users/jtleek/repos", gtoken)
 req
 stop_for_status(req)
-?stop_for_status
+class(req)
 
+library(RJSONIO)
 ms <- content(req) #extract the json data .-- create a structured r object (that is raw)
-?content
 ms
 str(ms)
-library(RJSONIO)
- 
+class(ms) # a list
+
+p <- toJSON(ms)
+class(p)
+
 json <- jsonlite::fromJSON(toJSON(ms))
 dim(json)
 json$name
 str(json)
+
 datasharing <- json[json$name == "datasharing",]
 datasharing$created_at # "2013-11-07T13:25:07Z"
 
