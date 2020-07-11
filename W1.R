@@ -131,6 +131,17 @@ doc <- xmlTreeParse(fileUrl, useInternalNodes = TRUE) # load the document and pa
 rootNode <- xmlRoot(doc)
 xmlName(rootNODE)
 
+# other option GET
+
+######################################## BEST ##################################
+library(httr)
+fileUrl <- GET("http://www.w3schools.com/xml/simple.xml")
+content <- content(fileUrl,as="text")
+parsedxml <- xmlParse(content,asText=TRUE)
+rootNode <- xmlRoot(parsedxml)
+xmlName(rootNode)
+######################################## BEST ##################################
+
 
 names(rootNode)
 rootNode[[1]] # show the first part of the xml file (like a list)
