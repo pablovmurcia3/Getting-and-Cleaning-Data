@@ -57,3 +57,181 @@ X
 Y <- cbind(X, rnorm(5)) # The same
 
 Z <- rbind(Y, rnorm(5))
+
+
+################################################################################
+################################################################################
+
+#Summarizing data
+
+# crucial step in cleaning data
+
+if(!file.exists("./data")){dir.create("./data")}
+fileUrl <- "https://data.baltimorecity.gov/api/views/k5ry-ef3g/rows.csv?accessType=DOWNLOAD"
+download.file(fileUrl,destfile="./data/restaurants.csv",method="curl")
+restData <- read.csv("./data/restaurants.csv")
+
+# look a bit of the data
+
+head(restData, n=3) # n number of rows
+tail(restData, n=3)  
+
+summary(restData) #info of variables
+
+str(restData)
+restData$name <-as.factor(restData$name)
+
+
+quantile(restData$councilDistrict, na.rm = TRUE)
+quantile(restData$councilDistrict,probs=c(0.5,0.75,0.9)) # Look at different percentage
+
+
+# Make table 
+table(restData$Location.1, useNA = "ifany") # useNA ifany to know the numer of Na
+# in this case there are not na
+
+table(restData$councilDistrict,restData$zipCode) # two variables 
+
+# check for missing values
+
+sum(is.na(restData$councilDistrict))
+
+any(is.na(restData$councilDistrict))
+
+all(restData$zipCode > 0) # we hop tha zipc are greater than 0--- so we have a problem
+##   INTERESTING!!!!!
+
+
+#row and column sums
+
+colSums(is.na(restData)) # for every variable !
+
+all(colSums(is.na(restData)) == 0) # we have a problem!!!
+
+# Values with specific characteristics
+
+table(restData$zipCode %in% c("21212")) # all the zipc that are 21212
+# are there any valuas that fall into the vector
+sum(restData$zipCode == 21212)
+table(restData$zipCode %in% c("21213"))
+table(restData$zipCode %in% c("21212","21213"))
+# are there any valuas that are either  equal to one or the other of these values
+
+
+a<-restData[restData$zipCode %in% c("21212","21213"),] # more easy to subset
+b<-restData[ restData$zipCode == "21212" |  restData$zipCode == "21213",  ]
+identical(a,b)
+
+
+# Cross tabs
+
+data(UCBAdmissions)
+
+DF <- as.data.frame(UCBAdmissions)
+summary(DF)
+
+
+xt <- xtabs(Freq ~ Gender + Admit,data=DF) # CROSS TAB
+xt
+?xtabs
+
+# Falt tables
+warpbreaks <- as.data.frame(warpbreaks)
+summary(warpbreaks)
+
+warpbreaks$replicate <- rep(1:9, len = 54)
+xt = xtabs(breaks ~.,data=warpbreaks)
+xt
+
+ftable(xt)
+
+# Size of a data set
+
+
+fakeData <- rnorm(1e5)
+object.size(fakeData)
+print(object.size(fakeData),units="Mb")
+
+
+################################################################################
+################################################################################
+
+# Creating new data
+
+
+if(!file.exists("./data")){dir.create("./data")}
+fileUrl <- "https://data.baltimorecity.gov/api/views/k5ry-ef3g/rows.csv?accessType=DOWNLOAD"
+download.file(fileUrl,destfile="./data/restaurants.csv",method="curl")
+restData <- read.csv("./data/restaurants.csv")
+
+
+# creating sequences
+
+s1 <- seq(1,10,by=2) ; s1
+s2 <- seq(1,10,length=3); s2
+x <- c(1,3,8,25,100); seq(along = x)
+seq_along(x)
+
+# Subsetting variables
+restData$nearMe <- restData$neighborhood %in% c("Roland Park", "Homeland")
+table(restData$nearMe)
+
+# Creating binary variables 
+
+restData$zipWrong <- ifelse(restData$zipCode < 0, TRUE, FALSE)
+table(restData$zipWrong,restData$zipCode < 0)
+
+as.numeric(restData$nearMe)
+
+# Creating categorical variables 
+
+quantile(restData$zipCode)
+restData$zipGroups <- cut(restData$zipCode,breaks=quantile(restData$zipCode))
+# break the variable according to the quantiles
+table(restData$zipGroups)
+class(restData$zipGroups)
+
+table(restData$zipGroups,restData$zipCode) 
+
+
+# Easier cutting
+install.packages("Hmisc")
+library(Hmisc)
+restData$zipGroups <- cut2(restData$zipCode,g=4) # cut2! only put the groups 
+table(restData$zipGroups)
+
+#Cutting produces factor variables
+
+# Creating factor variables
+restData$zcf <- factor(restData$zipCode)
+restData$zcf[1:10]
+class(restData$zcf)
+
+
+# Levels of factor variables
+
+yesno <- sample(c("yes","no"),size=10,replace=TRUE)
+yesnofac <- factor(yesno,levels=c("yes","no"))
+relevel(yesnofac,ref="yes")
+as.numeric(yesnofac) # see as numeric
+
+#  Using the mutate function
+
+library(Hmisc); library(plyr)
+restData2 <- mutate(restData,zipGroups=cut2(zipCode,g=4))
+
+# Common transforms
+
+# `abs(x)` absolute value
+# `sqrt(x)` square root
+# `ceiling(x)` ceiling(3.475) is 4
+# `floor(x)` floor(3.475) is 3
+# `round(x,digits=n)` round(3.475,digits=2) is 3.48
+# `signif(x,digits=n)` signif(3.475,digits=2) is 3.5
+# `cos(x), sin(x)` etc.
+# `log(x)` natural logarithm
+# `log2(x)`, `log10(x)` other common logs
+# `exp(x)` exponentiating x
+
+table(restData2$zipGroups)
+ 
