@@ -219,6 +219,7 @@ as.numeric(yesnofac) # see as numeric
 
 library(Hmisc); library(plyr)
 restData2 <- mutate(restData,zipGroups=cut2(zipCode,g=4))
+table(restData2$zipGroups)
 
 # Common transforms
 
@@ -233,5 +234,74 @@ restData2 <- mutate(restData,zipGroups=cut2(zipCode,g=4))
 # `log2(x)`, `log10(x)` other common logs
 # `exp(x)` exponentiating x
 
-table(restData2$zipGroups)
+
+################################################################################
+################################################################################
+
+# Reshape the data --- get to tidy!
+
+# each variable forms a column
+# each observation a row
+
+
+install.packages("reshape2")
+library(reshape2 )
+
+data(mtcars)
+head(mtcars) 
+
+# Melt the data set 
+
+mtcars$carname <- rownames(mtcars)
+carMelt <- melt(mtcars,id=c("carname","gear","cyl"),measure.vars=c("mpg","hp"))
+head(carMelt,n=3)
+tail(carMelt,n=3)
+
+table(carMelt$cyl)
+
+# Cast the data set
+
+cylData <- dcast(carMelt, cyl ~ variable) # summarize the data set 
+cylData # cyl in the rows and variable in the column
  
+cylData <- dcast(carMelt, cyl ~ variable,mean) # re-summarize
+cylData
+
+# Average values
+data(InsectSprays)
+head(InsectSprays)
+tapply(InsectSprays$count,InsectSprays$spray,sum)
+
+# Another way - split
+
+spIns <-  split(InsectSprays$count,InsectSprays$spray)
+spIns
+
+sprCount <- lapply(spIns,sum)
+sprCount
+
+unlist(sprCount)
+
+sapply(spIns,sum)
+
+
+
+# Another way - plyr package
+
+library(plyr)
+
+ddply(InsectSprays,.(spray),summarize,sum=sum(count))
+
+?ddply
+
+# Creating a new variable
+spraySums <- ddply(InsectSprays,.(spray),summarize,sum=ave(count,FUN=sum))
+dim(spraySums)
+head(spraySums)
+
+# usual combination --- Mutate + ddply 
+
+com <- mutate(InsectSprays, sum = ddply(InsectSprays,.(spray),summarize,sum=ave(count,FUN=sum))[,2])
+com
+
+
