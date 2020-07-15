@@ -4,6 +4,8 @@
 
 # Get to tidy data!
 
+# subsetting and sorting data
+
 set.seed(13435)
 X <- data.frame("var1"=sample(1:5),"var2"=sample(6:10),"var3"=sample(11:15))
 X
@@ -245,7 +247,7 @@ table(restData2$zipGroups)
 
 
 install.packages("reshape2")
-library(reshape2 )
+library(reshape2)
 
 data(mtcars)
 head(mtcars) 
@@ -254,11 +256,13 @@ head(mtcars)
 
 mtcars$carname <- rownames(mtcars)
 carMelt <- melt(mtcars,id=c("carname","gear","cyl"),measure.vars=c("mpg","hp"))
+# melt the variables in one column
 head(carMelt,n=3)
 tail(carMelt,n=3)
 
 table(carMelt$cyl)
 
+# With the melt data set we can RE-Cast it into different shapes
 # Cast the data set
 
 cylData <- dcast(carMelt, cyl ~ variable) # summarize the data set 
@@ -301,7 +305,179 @@ head(spraySums)
 
 # usual combination --- Mutate + ddply 
 
-com <- mutate(InsectSprays, sum = ddply(InsectSprays,.(spray),summarize,sum=ave(count,FUN=sum))[,2])
+com <- mutate(InsectSprays, holis = ddply(InsectSprays,.(spray),summarize,sum = ave(count,FUN=sum))[,2])
 com
 
+################################################################################
+################################################################################
 
+# Dplyr package! 
+
+# The data frame is a key data structure in statistics and in R.
+
+# There is one observation per row
+ 
+#  Each column represents a variable or measure or characteristic
+
+#  Primary implementation that you will use is the default R
+# implementation
+
+#  Other implementations, particularly relational databases systems
+
+
+
+# Is faster tha plyr because is coded in C ++ in the low level
+
+
+# The important verbs
+# 1. select--- subset of columns
+# 2. filter--- subset of rows
+# 3. Arrange --- reorder 
+# 4. Rename
+# 5. Mutate
+# 6. Summarise
+
+# dplyr.function(data.frame, other arguments) -> returns a data frame
+install.packages("dplyr")
+library(dplyr)
+
+
+
+if(!file.exists("./data")){dir.create("./data")}
+fileUrl <- "https://github.com/DataScienceSpecialization/courses/raw/master/03_GettingData/dplyr/chicago.rds"
+download.file(fileUrl,destfile="./data/chicago.rds")
+chicago <- readRDS("./data/chicago.rds")
+
+dim(chicago)
+str(chicago)
+names(chicago)
+
+# Select
+
+head(select(chicago, city:dptp)) # : a notation to select all the columns 
+# between city and dptp
+
+head(select(chicago, -(city:dptp))) # select all the columns except the ones in
+# the -(:)
+
+# Filter 
+
+chic.f <- filter(chicago, chicago$pm25tmean2 > 30)
+head(chic.f)
+
+
+chic.f <- filter(chicago, pm25tmean2 > 30 & tmpd > 80)
+head(chic.f)
+
+# the nice thing of these functions -- you can refer to the variable using their 
+# names
+
+# Arrange
+
+chicago <- arrange(chicago, date)
+head(chicago)
+tail(chicago)
+
+chicago <- arrange(chicago, desc(date))
+head(chicago)
+tail(chicago)
+
+# Rename 
+
+chicago <- rename(chicago, pm25 = pm25tmean2, dewpoint=dptp)
+names(chicago)
+head(chicago)
+
+# Mutate 
+
+chicago <- mutate(chicago, pm25detrend = pm25 - mean(pm25, na.rm = TRUE))
+head(chicago)
+
+# Group by + summarize
+
+chicago <- mutate(chicago, tempcat = factor(1*(tmpd > 80), labels = c("cold","hot")))
+
+################################################################################
+nums <- sample(70:90, 20, replace = TRUE)
+
+factor(nums > 80) # displays TRUE and FALSE
+factor(1*(nums > 80)) # displays 0 and 1
+nums <- as.numeric(factor(nums > 80)) # displays 1 and 2
+nums
+################################################################################
+
+hotcold <- group_by(chicago, tempcat)
+hotcold
+
+summarize(hotcold, pm25 = mean(pm25, na.rm = TRUE), o3 = max(o3tmean2), 
+          no2 = median(no2tmean2))
+################################################################################
+
+chicago$date[1000]
+
+as.POSIXlt(chicago$date)$year[1000] + 1900
+
+chicago$date[1]
+as.POSIXlt(chicago$date)$mon[1]
+
+################################################################################
+
+chicago <- mutate(chicago, year = as.POSIXlt(date)$year + 1900)
+
+years <- group_by(chicago, year)
+
+summarize(years, pm25 = mean(pm25, na.rm = TRUE), o3 = max(o3tmean2, na.rm = TRUE), 
+          no2 = median(no2tmean2, na.rm = TRUE))
+
+# Special operator -- chain different operations together -- pipe line
+
+chicago %>% mutate(month = as.POSIXlt(date)$mon + 1) %>% group_by(month) %>% 
+          summarize(pm25 = mean(pm25, na.rm = TRUE), 
+              o3 = max(o3tmean2, na.rm = TRUE), 
+              no2 = median(no2tmean2, na.rm = TRUE))
+# i dont have to specify the name of the data frame 
+
+
+# we can use the dplyr with data.table!!!
+
+################################################################################
+
+# Merging Data 
+
+if(!file.exists("./data")){dir.create("./data")}
+fileUrl1 = "https://raw.githubusercontent.com/jtleek/dataanalysis/master/week2/007summarizingData/data/reviews.csv"
+fileUrl2 = "https://raw.githubusercontent.com/jtleek/dataanalysis/master/week2/007summarizingData/data/solutions.csv"
+download.file(fileUrl1,destfile="./data/reviews.csv",method="curl")
+download.file(fileUrl2,destfile="./data/solutions.csv",method="curl")
+reviews = read.csv("./data/reviews.csv")
+solutions <- read.csv("./data/solutions.csv")
+head(reviews,2)
+head(solutions,2)
+
+names(reviews)
+names(solutions)
+
+mergedData <- merge(reviews,solutions,by.x="solution_id",by.y="id",all=TRUE)
+#  all -- include all the variables
+head(mergedData)
+
+
+# Using join in the plyr package 
+
+# Faster, but less full featured - defaults to left join,
+library(plyr)
+df1 <- data.frame(id=sample(1:10),x=rnorm(10))
+df2 <- data.frame(id=sample(1:10),y=rnorm(10))
+arrange(join(df1,df2),id) # only can merge in the base of common names between 
+# the data.frames
+
+# If you have multiple data frames, the plyr packages is recomended (id the names 
+# are the same) -- join_all
+
+
+df1 <- data.frame(id=sample(1:10),x=rnorm(10))
+df2 <- data.frame(id=sample(1:10),y=rnorm(10))
+df3 <- data.frame(id=sample(1:10),z=rnorm(10))
+dfList <- list(df1,df2,df3) # all the data frames need to be in a list
+join_all(dfList)
+?join_all
